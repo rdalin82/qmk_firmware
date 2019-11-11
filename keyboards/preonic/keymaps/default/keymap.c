@@ -19,22 +19,22 @@
 
 enum preonic_layers {
   _QWERTY,
+  _NUMPAD,
   _COLEMAK,
   _DVORAK,
   _LOWER,
   _RAISE,
   _ADJUST,
-  _NUMPAD
 };
 
 enum preonic_keycodes {
   QWERTY = SAFE_RANGE,
+  NUMPAD,
   COLEMAK,
   DVORAK,
   LOWER,
   RAISE,
   BACKLIT,
-  NUMPAD
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -58,6 +58,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, \
   KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT,  \
   BACKLIT, KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT  \
+),
+/* NUMPAD
+ * ,-----------------------------------------------------------------------------------.
+ * |   `  |      |      |      |      |      |      |      |   /  |   *  |      | Bksp |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * | Tab  | PGUP |  Up  | PGDN |      |      |      |      |   7  |   8  |   9  |  -   |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | Esc  | Left | Down |Right |      |      |      |      |   4  |   5  |   6  |  +   |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * | Shift|      |      |      |      |      |      |      |   1  |   2  |   3  |  =   |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * | Brite| Ctrl | Alt  | GUI  |Lower |    Space    |Raise |   0  |   .  |   ,  |Enter |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_NUMPAD] = LAYOUT_preonic_grid( \
+  KC_GRV,  _______, _______, _______, _______, _______, _______, _______, KC_BSLS, KC_MPLY, _______, KC_BSPC, \
+  KC_TAB,  KC_PGUP, KC_UP,   KC_PGDN, _______, _______, _______, _______, KC_7,    KC_8,    KC_9,    KC_MINS, \
+  KC_ESC,  KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, _______, _______, KC_4,    KC_5,    KC_6,    KC_PLUS, \
+  KC_LSFT, _______, _______, _______, _______, _______, _______, _______, KC_1,    KC_2,    KC_3,    KC_EQL,  \
+  KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_0,    KC_DOT,  KC_COMM, KC_ENT   \
 ),
 
 /* Colemak
@@ -163,26 +183,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  COLEMAK, DVORAK,  NUMPAD,  _______, \
   _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  _______, _______, _______, _______, _______, \
   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______  \
-),
-/* NUMPAD
- * ,-----------------------------------------------------------------------------------.
- * |   `  |      |      |      |      |      |      |      |   /  |   *  |      | Bksp |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Tab  | PGUP |  Up  | PGDN |      |      |      |      |   7  |   8  |   9  |  -   |
- * |------+------+------+------+------+-------------+------+------+------+------+------|
- * | Esc  | Left | Down |Right |      |      |      |      |   4  |   5  |   6  |  +   |
- * |------+------+------+------+------+------|------+------+------+------+------+------|
- * | Shift|      |      |      |      |      |      |      |   1  |   2  |   3  |  =   |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Brite| Ctrl | Alt  | GUI  |Lower |    Space    |Raise |   0  |   .  |   ,  |Enter |
- * `-----------------------------------------------------------------------------------'
- */
-[_NUMPAD] = LAYOUT_preonic_grid( \
-  KC_GRV,  _______, _______, _______, _______, _______, _______, _______, KC_BSLS, KC_MPLY, _______, KC_BSPC, \
-  KC_TAB,  KC_PGUP, KC_UP,   KC_PGDN, _______, _______, _______, _______, KC_7,    KC_8,    KC_9,    KC_MINS, \
-  KC_ESC,  KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, _______, _______, KC_4,    KC_5,     KC_6,    KC_PLUS, \
-  KC_LSFT, _______, _______, _______, _______, _______, _______, _______, KC_1,    KC_2,    KC_3,    KC_EQL,  \
-  KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_0,    KC_DOT,  KC_COMM, KC_END   \
 )
 };
 
@@ -203,6 +203,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case DVORAK:
           if (record->event.pressed) {
             set_single_persistent_default_layer(_DVORAK);
+          }
+          return false;
+          break;
+        case NUMPAD:
+          if (record->event.pressed) {
+            set_single_persistent_default_layer(_NUMPAD);
           }
           return false;
           break;
@@ -240,12 +246,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             #ifdef __AVR__
             writePinHigh(E6);
             #endif
-          }
-          return false;
-          break;
-        case NUMPAD:
-          if (record->event.pressed) {
-            set_single_persistent_default_layer(_NUMPAD);
           }
           return false;
           break;
